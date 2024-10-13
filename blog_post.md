@@ -33,7 +33,8 @@ First, sign in to your GCP console and create a new project. Once your project i
 
 1. Enable the Google Places API: Navigate to **APIs & Services > Enable APIs and Services**, and search for "Places API."
 2. Generate an API Key: Go to **APIs & Services > Credentials** and create a new API key.
-![Image related to Gcloud](C:\Users\lenovo\OneDrive - University Of Houston\Desktop\GoogleAPI_Minio\images\Capture.JPG)
+![Logo](C:\Users\lenovo\OneDrive - University Of Houston\Desktop\GoogleAPI_Minio\images\Capture.JPG)
+
 
 
 We will use this API key in the **Google_Places_API_config.py** file.
