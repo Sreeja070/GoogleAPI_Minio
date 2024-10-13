@@ -1,9 +1,12 @@
 
 # Leveraging Google Places API for Restaurant Data and Storing It in MinIO
 
-In today’s data-driven world, location data is a key asset for applications ranging from travel planners to restaurant finders and even e-commerce platforms. One of the most powerful tools for accessing detailed place-related information is the **Google Places API**. This robust API empowers developers to enrich their apps with dynamic location intelligence.
+In today’s digital world, location data is the backbone of many cutting-edge apps, from travel planners to restaurant finders and even e-commerce platforms. **Google Places API** is a robust tool that opens the door to an entire world of place-related data, empowering developers to enrich their applications with dynamic location intelligence. 
 
-In this blog, we’ll walk through the steps of fetching restaurant data using the Google Places API and storing that data in **MinIO**, an open-source object storage solution. Our use case focuses on nearby restaurant data, which will be filtered and stored in JSON format in MinIO.
+The Google Places API is a service provided by Google that allows applications to access detailed information about places, such as businesses, landmarks, and other points of interest.
+
+In this blog we will see how to do step by step process to get the data using Google Places API and then store it in the **Minio** (Open source data storage/data-lake)
+
 
 ## Table of Contents
 1. [Prerequisites](#prerequisites)
