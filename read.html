@@ -1,0 +1,149 @@
+
+### HTML Format:
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leveraging Google Places API for Restaurant Data and Storing It in MinIO</title>
+</head>
+<body>
+
+<h1>Leveraging Google Places API for Restaurant Data and Storing It in MinIO</h1>
+
+<p>In today’s data-driven world, location data is a key asset for applications ranging from travel planners to restaurant finders and even e-commerce platforms. One of the most powerful tools for accessing detailed place-related information is the <strong>Google Places API</strong>. This robust API empowers developers to enrich their apps with dynamic location intelligence.</p>
+
+<p>In this blog, we’ll walk through the steps of fetching restaurant data using the Google Places API and storing that data in <strong>MinIO</strong>, an open-source object storage solution. Our use case focuses on nearby restaurant data, which will be filtered and stored in JSON format in MinIO.</p>
+
+<h2>Table of Contents</h2>
+<ol>
+    <li><a href="#prerequisites">Prerequisites</a></li>
+    <li><a href="#step-1-get-the-google-places-api-key">Step 1: Get the Google Places API Key</a></li>
+    <li><a href="#step-2-get-minio-credentials">Step 2: Get MinIO Credentials</a></li>
+    <li><a href="#step-3-create-and-execute-the-python-script">Step 3: Create and Execute the Python Script</a></li>
+    <li><a href="#advantages-of-using-google-places-api-and-minio">Advantages of Using Google Places API and MinIO</a></li>
+    <li><a href="#alternatives-to-google-places-api">Alternatives to Google Places API</a></li>
+    <li><a href="#references">References</a></li>
+</ol>
+
+<h2 id="prerequisites">Prerequisites</h2>
+<p>Before we start, ensure you have the following in place:</p>
+<ul>
+    <li>Google Cloud Platform (GCP) account</li>
+    <li>MinIO set up (either locally or in the cloud)</li>
+    <li>Python installed on your system</li>
+</ul>
+
+<p>We’ll use three configuration files in this project:</p>
+<ol>
+    <li><strong>Google_Places_API_config.py</strong> – for Google Places API configuration</li>
+    <li><strong>MinIO_config.py</strong> – for MinIO client configuration</li>
+    <li><strong>Main.py</strong> – the main Python script to run the process</li>
+</ol>
+
+<h2 id="step-1-get-the-google-places-api-key">Step 1: Get the Google Places API Key</h2>
+<p>First, sign in to your GCP console and create a new project. Once your project is ready:</p>
+<ol>
+    <li>Enable the Google Places API: Navigate to <strong>APIs & Services &gt; Enable APIs and Services</strong>, and search for "Places API."</li>
+    <li>Generate an API Key: Go to <strong>APIs & Services &gt; Credentials</strong> and create a new API key.</li>
+</ol>
+
+<p>We will use this API key in the <strong>Google_Places_API_config.py</strong> file.</p>
+
+<h2 id="step-2-get-minio-credentials">Step 2: Get MinIO Credentials</h2>
+<p>MinIO credentials can be obtained by logging into your MinIO console. Create a bucket and an object path (if it doesn’t exist, the script will create it automatically). Below is a snippet of how you would structure your MinIO config file:</p>
+
+<pre><code># MinIO_config.py
+import minio
+
+def get_minio_client():
+    client = minio.Minio(
+        "play.min.io",
+        access_key="your-access-key",
+        secret_key="your-secret-key",
+        secure=True
+    )
+    return client
+</code></pre>
+
+<h2 id="step-3-create-and-execute-the-python-script">Step 3: Create and Execute the Python Script</h2>
+<p>In the <strong>Main.py</strong> file, we’ll cover the following steps:</p>
+
+<h3>1. Importing Libraries & Initializing Clients</h3>
+<pre><code>import json
+import time
+from io import BytesIO
+from minio.error import S3Error
+from config.minio_config import get_minio_client
+from config.google_api_config import get_gmaps_client
+
+# Initialize clients
+gmaps = get_gmaps_client()
+minio_client = get_minio_client()
+</code></pre>
+
+<h3>2. Fetching Nearby Places Using Google Places API</h3>
+<pre><code>places_result = gmaps.places_nearby(location=(latitude, longitude), radius=1500, keyword="Indian")
+</code></pre>
+
+<h3>3. Filtering Results & Handling Pagination</h3>
+<pre><code>while 'next_page_token' in places_result:
+    time.sleep(2)  # Ensures we wait before fetching the next page
+    places_result = gmaps.places_nearby(page_token=places_result['next_page_token'])
+</code></pre>
+
+<h3>4. Uploading Data to MinIO</h3>
+<pre><code>json_data = json.dumps(filtered_results).encode('utf-8')
+data_stream = BytesIO(json_data)
+
+try:
+    minio_client.put_object('my-bucket', 'restaurants.json', data_stream, len(json_data))
+    print("Data uploaded successfully.")
+except S3Error as err:
+    print(f"Error: {err}")
+</code></pre>
+
+<h3>File Structure</h3>
+<pre><code>GoogleAPI/
+│
+├── Main.py                      # Main Python script
+│
+└── Config/
+    ├── MinIO_config.py          # MinIO configuration
+    └── Google_API_Config.py     # Google API configuration
+</code></pre>
+
+<p>To execute, navigate to the project folder and run the <strong>Main.py</strong> file:</p>
+
+<pre><code>python3 Main.py
+</code></pre>
+
+<h2 id="advantages-of-using-google-places-api-and-minio">Advantages of Using Google Places API and MinIO</h2>
+<ol>
+    <li><strong>Access to rich, real-time location data</strong> – Google Places API provides detailed and up-to-date information about businesses and other points of interest.</li>
+    <li><strong>Flexibility in data filtering</strong> – Filter data to keep only the attributes that matter most for your use case.</li>
+    <li><strong>Scalable and cost-efficient storage</strong> – MinIO offers scalable object storage, ideal for large datasets.</li>
+</ol>
+
+<h2 id="alternatives-to-google-places-api">Alternatives to Google Places API</h2>
+<p>While Google Places API is a powerful tool, there are more affordable alternatives available:</p>
+<ul>
+    <li><strong>TomTom Search API</strong>: $0.5 per 1,000 requests (40x cheaper than Google)</li>
+    <li><strong>Mapbox</strong>: Free for the first 100,000 requests, then $0.75 per 1,000 requests</li>
+    <li><strong>OpenStreetMap</strong>: Free, though with some limitations</li>
+</ul>
+
+<p>However, these alternatives might not offer the same level of detail or completeness as Google Places API. Another option is the <strong>SERP API</strong>, which offers easier integration and competitive pricing.</p>
+
+<h2 id="references">References</h2>
+<ul>
+    <li><a href="https://developers.google.com/maps/documentation/places/web-service/overview">Google Places API Documentation</a></li>
+    <li><a href="https://min.io/docs/minio/windows/index.html">MinIO Documentation</a></li>
+    <li><a href="https://github.com/Sreeja070/GoogleAPI_Minio">GitHub Repository for Code</a></li>
+    <li><a href="https://medium.com/@paulotaylor/google-places-api-alternatives-a-guide-to-save-you-big-money-with-genai-774605e04769">Alternatives to Google Places API</a></li>
+</ul>
+
+</body>
+</html>
