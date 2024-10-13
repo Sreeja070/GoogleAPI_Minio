@@ -68,6 +68,9 @@ minio_client = get_minio_client()
 ```
 
 ### 2. Fetching Nearby Places Using Google Places API
+- API request made via `gmaps.places_nearby()` to retrieve restaurant data based on keyword (e.g., "Indian") and location.
+- Detailed restaurant information is returned, including name, address, and operational status.
+- Full implementation available in the GitHub repository.
 ```python
 places_result = gmaps.places_nearby(location=(latitude, longitude), radius=1500, keyword="Indian")
 ```
@@ -78,8 +81,14 @@ while 'next_page_token' in places_result:
     time.sleep(2)  # Ensures we wait before fetching the next page
     places_result = gmaps.places_nearby(page_token=places_result['next_page_token'])
 ```
+- Script extracts relevant details (name, rating, address) from each page of results.
+- Pagination handled via `next_page_token` to ensure all data is collected.
+- Short delay (`time.sleep(2)`) between requests for subsequent pages.
 
 ### 4. Uploading Data to MinIO
+- Filtered results serialized to JSON and uploaded to MinIO using `BytesIO`.
+- Script auto-creates the bucket if it doesn’t exist before upload.
+- Data can be stored in other formats like PARQUET with minor code adjustments.
 ```python
 json_data = json.dumps(filtered_results).encode('utf-8')
 data_stream = BytesIO(json_data)
